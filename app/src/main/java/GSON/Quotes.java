@@ -5,28 +5,60 @@ package GSON;
 import com.google.gson.Gson;
 
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Random;
 
 public class Quotes {
 
     public static void main(String[] args) throws IOException {
 
-            InputStream inputStream = Quotes.class.getResourceAsStream("/recentquotes.json");
-            InputStreamReader reader = new InputStreamReader(inputStream);
 
-            Gson gson = new Gson();
-            Quote[] quotesAndAuthorArray = gson.fromJson(reader, Quote[].class);
+        try {
+            URL url =new URL("https://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en");
+            HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+            connection.setRequestMethod("GET");
 
-            Random random = new Random();
-            int randomNumber = random.nextInt(quotesAndAuthorArray.length);
-            System.out.println(quotesAndAuthorArray[randomNumber].toString());
 
-//            quotesAndAuthor[] quotesAndAuthorsArray = gson.fromJson(jsonFileReader, quotesAndAuthor[].class);
+                InputStream inputStream= connection.getInputStream();
+                InputStreamReader inputStreamReader= new InputStreamReader(inputStream);
+                BufferedReader in = new BufferedReader(inputStreamReader);
+                String dataJson = in.readLine();
+                dataJson = dataJson.replace("quoteText", "text");
+                dataJson = dataJson.replace("quoteAuthor", "author");
+//                System.out.println(dataJson);
+                Gson gson = new Gson();
+                Quote quotesAndAuthor = gson.fromJson(dataJson, Quote.class);
+                System.out.println(quotesAndAuthor.toString());
+
+//                while (dataJson!=null){
+//                    System.out.println(dataJson);
+//                    dataJson=in.readLine();
+//                    in.close();
+//                }
+
+
+        }catch (Exception e){
+            gsonQuotes(); // Read OFFLINE //
+        }
 
 
     }
 
+    private static void gsonQuotes() { //lab 8
+        InputStream inputStream = Quotes.class.getResourceAsStream("/recentquotes.json");
+        InputStreamReader reader = new InputStreamReader(inputStream);
+
+        Gson gson = new Gson();
+        Quote[] quotesAndAuthorArray = gson.fromJson(reader, Quote[].class);
+
+        Random random = new Random();
+        int randomNumber = random.nextInt(quotesAndAuthorArray.length);
+        System.out.println(quotesAndAuthorArray[randomNumber].toString());
 
     }
+
+
+}
 
 
